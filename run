@@ -1,10 +1,12 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
-USER="homeassistant"
+USER="${USER:-homeassistant}"
 GROUP="$USER"
 PUID="${PUID:-1000}"
 PGID="${PGID:-1000}"
+HASS_OPTIONS="${HASS_OPTIONS:-}"
+
 
 UMASK="${UMASK:-}"
 
@@ -110,6 +112,11 @@ uv --version && su "$USER" \
 bashio::log.info "Setting new \$HOME"
 HOME="$( getent passwd "$USER" | cut -d: -f6 )"
 export HOME
+bashio::log.info "New HOME: $HOME"
+
+chown -R "${USER}":"${GROUP}" /config
+
+bashio::log.info "Extra options: $HASS_OPTIONS"
 
 # Everything below should be kept in sync with upstream's
 #   https://github.com/home-assistant/core/blob/dev/rootfs/etc/services.d/home-assistant/run
@@ -124,4 +131,4 @@ fi
 bashio::log.info "Starting homeassistant"
 exec \
   s6-setuidgid "$USER" \
-  python3 -m homeassistant --config "$CONFIG_PATH"
+  python3 -m homeassistant --config "$CONFIG_PATH" $HASS_OPTIONS
