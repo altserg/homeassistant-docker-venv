@@ -112,6 +112,8 @@ export UV_SYSTEM_PYTHON=false
 bashio::log.info "Installing uv into venv"
 uv --version && s6-applyuidgid -u $PUID -g $PGID \
   uv pip freeze --system|grep ^uv=|xargs uv pip install
+rm -rf /tmp/* || true
+chown -R "${PUID}":"${PGID}" "$VENV_PATH"
 
 bashio::log.info "Setting new \$HOME"
 HOME="$( getent passwd "$USER" || echo ":::::/home/$USER" | cut -d: -f6 )"
